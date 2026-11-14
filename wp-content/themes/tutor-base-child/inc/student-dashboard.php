@@ -359,8 +359,30 @@ function bmb_is_student_dashboard() {
     return function_exists( 'tutor_utils' ) && is_user_logged_in() && tutor_utils()->is_tutor_frontend_dashboard() && ! get_query_var( 'tutor_dashboard_page' );
 }
 
+function bmb_is_student_learning_page() {
+    if ( ! function_exists( 'tutor_utils' ) || ! is_user_logged_in() ) {
+        return false;
+    }
+    // Includes isolated quiz reviews and other supplemental Tutor dashboard routes.
+    if ( tutor_utils()->is_tutor_frontend_dashboard() ) {
+        return ! bmb_is_student_dashboard();
+    }
+    if ( ! tutor_utils()->is_learning_area() ) {
+        return false;
+    }
+    $post = get_post( get_queried_object_id() );
+    if ( ! $post ) {
+        return false;
+    }
+    if ( 'courses' === $post->post_type ) {
+        return (int) $post->ID === bmb_student_course_id();
+    }
+    $topic = get_post( $post->post_parent );
+    return $topic && (int) $topic->post_parent === bmb_student_course_id();
+}
+
 function bmb_is_student_portal_page() {
-    return bmb_is_student_dashboard() || is_page_template( 'page-contact-form.php' );
+    return bmb_is_student_dashboard() || is_page_template( 'page-contact-form.php' ) || bmb_is_student_learning_page();
 }
 
 /** A single, left-aligned menu shared by the dashboard and the new Contact page. */
@@ -384,13 +406,28 @@ function bmb_student_navigation() {
 add_filter( 'kirki_show_custom_section_header', static function ( $show ) { return bmb_is_student_portal_page() ? false : $show; } );
 add_action( 'wp_body_open', static function () {
     if ( bmb_is_student_portal_page() ) {
+        $learning = bmb_is_student_learning_page();
+        if ( $learning ) {
+            echo '<div class="bmb-learning-portal-bar">';
+        }
         ?>
         <div class="bmb-student-header" role="banner"><div class="bmb-student-header-inner">
             <a href="<?php echo esc_url( tutor_utils()->tutor_dashboard_url() ); ?>" aria-label="Bible Mastery Bootcamp dashboard"><img src="<?php echo esc_url( bmb_logo_url() ); ?>" alt="Bible Mastery Bootcamp" width="180" height="60"></a>
         </div></div>
         <?php
+        if ( $learning ) {
+            echo '<div class="bmb-learning-portal-nav"><div class="bmb-portal-container">';
+            bmb_student_navigation();
+            echo '</div></div></div>';
+        }
     }
 }, 2 );
+add_filter( 'body_class', static function ( $classes ) {
+    if ( bmb_is_student_learning_page() ) {
+        $classes[] = 'bmb-learning-page';
+    }
+    return $classes;
+} );
 
 // Retire the overview URL, preserving the course, lessons, quizzes, and enrollments.
 add_action( 'template_redirect', static function () {
@@ -398,6 +435,9 @@ add_action( 'template_redirect', static function () {
         return;
     }
     if ( isset( $_GET['action'] ) && 'kirki' === $_GET['action'] && current_user_can( 'edit_post', bmb_student_course_id() ) ) {
+        return;
+    }
+    if ( bmb_is_student_learning_page() ) {
         return;
     }
     wp_safe_redirect( is_user_logged_in() ? tutor_utils()->tutor_dashboard_url() : home_url( '/' ), 302 );
@@ -414,11 +454,15 @@ add_action( 'template_redirect', static function () {
         nocache_headers();
     }
 }, 1 );
-add_filter( 'kirki_show_custom_section_footer', static function ( $show ) { return bmb_is_student_dashboard() ? false : $show; } );
+add_filter( 'kirki_show_custom_section_footer', static function ( $show ) { return bmb_is_student_portal_page() ? false : $show; } );
 
 add_action( 'wp_enqueue_scripts', static function () {
     if ( bmb_is_student_portal_page() ) {
         wp_enqueue_style( 'bmb-student-navigation', get_stylesheet_directory_uri() . '/assets/css/student-navigation.css', array( 'child-style' ), filemtime( get_stylesheet_directory() . '/assets/css/student-navigation.css' ) );
+    }
+    if ( bmb_is_student_learning_page() ) {
+        wp_enqueue_style( 'bmb-student-learning', get_stylesheet_directory_uri() . '/assets/css/student-learning.css', array( 'bmb-student-navigation' ), filemtime( get_stylesheet_directory() . '/assets/css/student-learning.css' ) );
+        wp_enqueue_script( 'bmb-student-learning', get_stylesheet_directory_uri() . '/assets/js/student-learning.js', array(), filemtime( get_stylesheet_directory() . '/assets/js/student-learning.js' ), true );
     }
     $dashboard = bmb_is_student_dashboard();
     $lesson = is_singular( 'lesson' ) && bmb_student_class( get_queried_object_id() );
@@ -433,6 +477,20 @@ add_action( 'wp_enqueue_scripts', static function () {
     wp_enqueue_script( 'bmb-student-dashboard', $uri . '/assets/js/student-dashboard.js', array(), filemtime( $dir . '/assets/js/student-dashboard.js' ), true );
     wp_localize_script( 'bmb-student-dashboard', 'bmbStudent', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'bmb_student_video' ), 'lessonId' => $lesson ? get_queried_object_id() : 0 ) );
 } );
+
+/** Replace only the quiz overview illustration; keep Tutor's grading and controls intact. */
+function bmb_student_quiz_banner( $html ) {
+    if ( ! bmb_is_student_learning_page() || ! is_singular( 'tutor_quiz' ) ) {
+        return $html;
+    }
+    $banner = '<img class="bmb-course-banner" src="' . esc_url( get_stylesheet_directory_uri() . '/assets/images/course-banner.png' ) . '" alt="Bible Mastery Boot Camp" width="1024" height="223">';
+    return preg_replace_callback(
+        '/(<div\b[^>]*class=["\'][^"\']*\btutor-quiz-intro-icon\b[^"\']*["\'][^>]*>).*?(<\/div>)/s',
+        static fn( $match ) => $match[1] . $banner . $match[2],
+        $html, 1
+    );
+}
+add_filter( 'tutor_learning_area_content', 'bmb_student_quiz_banner', 20 );
 
 /** Available notebooks and supplementary videos, without inventing missing resources. */
 function bmb_student_resources( $lesson_id ) {

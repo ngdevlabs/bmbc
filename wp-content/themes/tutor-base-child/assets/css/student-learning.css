@@ -1,0 +1,32 @@
+.bmb-learning-page {
+    --bmb-admin-bar-height: 0px;
+    --bmb-portal-bar-height: 148px;
+    --bmb-portal-offset: calc(var(--bmb-admin-bar-height) + var(--bmb-portal-bar-height));
+    --bmb-course-header-height: 64px;
+    --bmb-quiz-header-height: 110px;
+    --bmb-quiz-footer-height: 96px;
+}
+.bmb-learning-page.admin-bar { --bmb-admin-bar-height: 32px; }
+.bmb-learning-portal-bar { position: sticky; top: var(--bmb-admin-bar-height); z-index: 1001; background: #fff; }
+.bmb-learning-portal-nav { padding: 0 24px; background: #f4f6f2; }
+.bmb-learning-page .tutor-learning-header { position: fixed; top: var(--bmb-portal-offset); }
+.bmb-learning-page .tutor-learning-sidebar { top: calc(var(--bmb-portal-offset) + var(--bmb-course-header-height)); height: calc(100dvh - var(--bmb-portal-offset) - var(--bmb-course-header-height)); }
+.bmb-learning-page .tutor-learning-area .tutor-learning-area-content { padding-top: var(--bmb-course-header-height); }
+.bmb-learning-page .tutor-quiz-intro-icon { height: auto; min-height: 0; padding: 0; background: transparent; }
+.bmb-learning-page .tutor-quiz-intro-icon .bmb-course-banner { display: block; width: 100%; max-width: none; height: auto; object-fit: contain; }
+.bmb-learning-page .tutor-quiz-header,
+body.bmb-learning-page:has(#wpadminbar) .tutor-quiz-header { top: var(--bmb-portal-offset); }
+.bmb-learning-page .tutor-quiz-submission[data-question-layout-view],
+body.bmb-learning-page:has(#wpadminbar) .tutor-quiz-submission[data-question-layout-view] { box-sizing: border-box; height: calc(100dvh - var(--bmb-portal-offset)); min-height: 0; padding-top: var(--bmb-quiz-header-height); }
+.bmb-learning-page .tutor-quiz-submission[data-question-layout-view] .tutor-quiz-question-wrapper { max-height: calc(100dvh - var(--bmb-portal-offset) - var(--bmb-quiz-header-height) - var(--bmb-quiz-footer-height)); min-height: 0; }
+.bmb-learning-page .tutor-quiz-summary-page,
+body.bmb-learning-page:has(#wpadminbar) .tutor-quiz-summary-page { --tutor-quiz-summary-header-top: var(--bmb-portal-offset); }
+.bmb-learning-page .tutor-dashboard-sidebar { top: var(--bmb-portal-offset); height: calc(100dvh - var(--bmb-portal-offset)); }
+.bmb-learning-page .tutor-dashboard-header { top: var(--bmb-portal-offset); }
+@media (max-width: 782px) {
+    .bmb-learning-page.admin-bar { --bmb-admin-bar-height: 46px; }
+}
+@media (max-width: 700px) {
+    .bmb-learning-page { --bmb-portal-bar-height: 128px; }
+    .bmb-learning-portal-nav { padding: 0 16px; }
+}

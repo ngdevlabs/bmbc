@@ -137,6 +137,26 @@ try {
     $assert( apply_filters( 'login_redirect', get_permalink( bmb_student_course_id() ), '', get_userdata( $student_id ) ) === $dashboard_url, 'Student WordPress login redirects to the dashboard rather than the syllabus.' );
     $assert( apply_filters( 'tutor_after_login_redirect_url', get_permalink( bmb_student_course_id() ) ) === $dashboard_url, 'Tutor login uses the same dashboard destination.' );
     $assert( apply_filters( 'login_redirect', admin_url(), '', get_userdata( 1 ) ) === admin_url(), 'Administrator WordPress login remains unchanged.' );
+
+    $previous_query = $GLOBALS['wp_query'];
+    $previous_post = $GLOBALS['post'] ?? null;
+    $previous_user = get_current_user_id();
+    try {
+        wp_set_current_user( $student_id );
+        $GLOBALS['wp_query'] = new WP_Query( array( 'post_type' => 'tutor_quiz', 'p' => 504 ) );
+        $GLOBALS['post'] = get_post( 504 );
+        $assert( bmb_is_student_learning_page() && bmb_is_student_portal_page(), 'Quiz learning pages inherit the student portal navigation.' );
+        $overview = '<div class="tutor-quiz-intro-icon"><svg><path d="M0 0"/></svg></div><h3>Class quiz</h3><button>Start Quiz</button>';
+        $branded = bmb_student_quiz_banner( $overview );
+        $assert( strpos( $branded, 'assets/images/course-banner.png' ) !== false && strpos( $branded, '<svg' ) === false, 'The quiz puzzle illustration is replaced by the deployed course banner.' );
+        $assert( strpos( $branded, '<h3>Class quiz</h3><button>Start Quiz</button>' ) !== false, 'Banner replacement preserves quiz content and controls.' );
+        wp_set_current_user( 0 );
+        $assert( bmb_student_quiz_banner( $overview ) === $overview, 'Quiz branding does not bypass guest-access restrictions.' );
+    } finally {
+        $GLOBALS['wp_query'] = $previous_query;
+        $GLOBALS['post'] = $previous_post;
+        wp_set_current_user( $previous_user );
+    }
     WP_CLI::success( $checks . ' dashboard and completion checks passed.' );
 } finally {
     $wpdb->delete( $wpdb->prefix . 'tutor_quiz_attempts', array( 'user_id' => $student_id ) );
