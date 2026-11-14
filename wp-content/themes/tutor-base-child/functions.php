@@ -20,6 +20,39 @@ function tutor_base_child_style() {
  * Your code goes below.
  */
 
+// Styles for the standalone contact form.
+add_action( 'wp_enqueue_scripts', 'bmb_enqueue_contact_form' );
+function bmb_enqueue_contact_form() {
+    if ( ! is_page_template( 'page-contact-form.php' ) ) {
+        return;
+    }
+    $style_path = '/assets/css/contact-form.css';
+    wp_enqueue_style(
+        'bmb-contact-form',
+        get_stylesheet_directory_uri() . $style_path,
+        array( 'child-style' ),
+        filemtime( get_stylesheet_directory() . $style_path )
+    );
+}
+
+// Show/hide password control for the landing page login form.
+add_action( 'wp_enqueue_scripts', 'bmb_enqueue_landing_login' );
+function bmb_enqueue_landing_login() {
+    if ( ! is_front_page() ) {
+        return;
+    }
+
+    $script_path = '/assets/js/landing-login.js';
+    wp_enqueue_script(
+        'bmb-landing-login',
+        get_stylesheet_directory_uri() . $script_path,
+        array(),
+        filemtime( get_stylesheet_directory() . $script_path ),
+        true
+    );
+}
+
+
 /* ========================================================
    BMB Settings – Dashboard Settings Page
    ======================================================== */

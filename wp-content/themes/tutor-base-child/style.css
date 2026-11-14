@@ -7,6 +7,42 @@
  * Version:        1.0.2
  */
 
+/* Landing page password visibility control. */
+.kirki-page .bmb-password-field {
+    position: relative;
+}
+
+.kirki-page .bmb-password-field > input {
+    padding-right: 52px;
+}
+
+.kirki-page .bmb-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #333;
+    cursor: pointer;
+}
+
+.kirki-page .bmb-password-toggle:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.kirki-page .bmb-password-toggle:focus-visible {
+    outline: 2px solid #1b8366;
+    outline-offset: -2px;
+}
+
 /* Hide Droip Footer on Tutor LMS Learning Area to prevent sidebar overlapping */
 body.single-lesson footer#footer,
 body.single-tutor_quiz footer#footer,
