@@ -14,6 +14,7 @@ if ( is_wp_error( $student_id ) ) {
 }
 $checks = 0;
 $historical_student_id = 0;
+$original_user_id = get_current_user_id();
 $assert = static function ( $condition, $message ) use ( &$checks ) {
     if ( ! $condition ) {
         throw new RuntimeException( $message );
@@ -38,10 +39,14 @@ $set_attempt = static function ( $earned, $status = 'attempt_ended', $result = '
 };
 
 try {
+    wp_set_current_user( $student_id );
+    $drip = ( new ReflectionClass( '\\TUTOR_CONTENT_DRIP\\ContentDrip' ) )->newInstanceWithoutConstructor();
+    $quiz_settings_before = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = 504 AND meta_key = '_content_drip_settings' LIMIT 1" );
     $assert( count( bmb_student_curriculum() ) === 4, 'Real curriculum contains four modules.' );
     $assert( $class['quizzes'] === array( 504 ) && bmb_student_class( 505 )['quizzes'] === array( 520 ), 'Each class uses its own following quiz.' );
     $assert( ! bmb_student_class_status( $class, $student_id )['complete'], 'A new student starts with no completed classes.' );
     $assert( bmb_student_can_access( 501, $student_id ) && ! bmb_student_can_access( 521, $student_id ), 'Existing free-preview and paid-access boundaries are preserved.' );
+    $assert( $drip->is_lock_lesson( 504 ), 'Tutor locks the Class 1 quiz before its video is watched.' );
 
     \Tutor\Models\LessonModel::mark_lesson_complete( $lesson_id, $student_id );
     $assert( ! get_user_meta( $student_id, '_tutor_completed_lesson_id_' . $lesson_id, true ), 'Direct Tutor auto-completion cannot bypass the requirements.' );
@@ -49,14 +54,27 @@ try {
     $set_ranges( array( array( 0, $duration * 0.95 ) ) );
     $set_attempt( 100 );
     $assert( ! bmb_student_class_status( $class, $student_id )['complete'], 'A passed quiz plus 95% watched is insufficient.' );
+    $assert( $drip->is_lock_lesson( 504 ), 'A partially watched video does not unlock its quiz.' );
     $assert( false === update_user_meta( $student_id, '_tutor_completed_lesson_id_' . $lesson_id, time() ), 'Manual completion metadata writes are also guarded.' );
 
     $set_ranges( array( array( 0, $duration - 20 ), array( $duration - 10, $duration ) ) );
     $assert( ! bmb_student_class_status( $class, $student_id )['complete'], 'Reaching the end with a skipped section does not count as a full watch.' );
+    $assert( $drip->is_lock_lesson( 504 ), 'Skipped video sections keep the quiz locked.' );
 
     $set_ranges( array( array( 0, $duration ) ) );
     $set_attempt( 0, 'attempt_ended', 'fail' );
     $assert( ! bmb_student_class_status( $class, $student_id )['complete'], 'Full video plus failed quiz is insufficient.' );
+    $assert( ! $drip->is_lock_lesson( 504 ), 'Tutor unlocks the quiz after a full video even without a passing attempt.' );
+    $assert( ! tutor_utils()->is_completed_lesson( $lesson_id, $student_id ), 'Unlocking the quiz does not mark the overall class complete.' );
+    $assert( $quiz_settings_before === $wpdb->get_var( "SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = 504 AND meta_key = '_content_drip_settings' LIMIT 1" ), 'Quiz unlocking preserves the stored prerequisite configuration.' );
+    wp_set_current_user( 0 );
+    $assert( in_array( '501', get_post_meta( 504, '_content_drip_settings', true )['prerequisites'], true ), 'Anonymous visitors retain the original quiz prerequisite.' );
+    wp_set_current_user( $student_id );
+    $paid_class = bmb_student_class( 521 );
+    $paid_video = bmb_student_video( 521 );
+    $paid_settings = get_post_meta( $paid_class['quizzes'][0], '_content_drip_settings', true );
+    update_user_meta( $student_id, '_bmb_video_521', array( 'fingerprint' => $paid_video['fingerprint'], 'ranges' => array( array( 0, $paid_video['duration'] ) ) ) );
+    $assert( ! bmb_student_can_access( $paid_class['quizzes'][0], $student_id ) && $paid_settings === get_post_meta( $paid_class['quizzes'][0], '_content_drip_settings', true ), 'Video evidence cannot bypass paid quiz access.' );
     $set_attempt( 100, 'attempt_started', 'pass', false );
     $assert( ! bmb_student_class_status( $class, $student_id )['complete'], 'An unfinished attempt with apparent passing marks cannot count.' );
     $set_attempt( 100, 'review_required', 'pending' );
@@ -159,6 +177,7 @@ try {
     }
     WP_CLI::success( $checks . ' dashboard and completion checks passed.' );
 } finally {
+    wp_set_current_user( $original_user_id );
     $wpdb->delete( $wpdb->prefix . 'tutor_quiz_attempts', array( 'user_id' => $student_id ) );
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user( $student_id );

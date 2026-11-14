@@ -244,6 +244,43 @@ function bmb_student_sync_completion( $lesson_id, $user_id ) {
     }
 }
 
+/** A class's own video unlocks its quiz; the class checkmark still requires a pass. */
+function bmb_student_quiz_video_prerequisite( $value, $post_id, $meta_key ) {
+    static $reading = false;
+    if ( $reading || null !== $value || '_content_drip_settings' !== $meta_key || 'tutor_quiz' !== get_post_type( $post_id ) ) {
+        return $value;
+    }
+    $user_id = get_current_user_id();
+    if ( ! $user_id || ! bmb_student_can_access( $post_id, $user_id ) ) {
+        return $value;
+    }
+    foreach ( bmb_student_curriculum() as $module ) {
+        foreach ( $module['classes'] as $class ) {
+            if ( ! in_array( (int) $post_id, $class['quizzes'], true ) ) {
+                continue;
+            }
+            $lesson_id = (int) $class['lesson']->ID;
+            if ( ! bmb_student_can_access( $lesson_id, $user_id ) || ! bmb_student_video_progress( $lesson_id, $user_id )['complete'] ) {
+                return $value;
+            }
+            $reading = true;
+            try {
+                $settings = get_post_meta( $post_id, $meta_key, true );
+            } finally {
+                $reading = false;
+            }
+            if ( ! is_array( $settings ) || ! is_array( $settings['prerequisites'] ?? null ) ) {
+                return $value;
+            }
+            // Preserve every other prerequisite and the stored course configuration.
+            $settings['prerequisites'] = array_filter( $settings['prerequisites'], static fn( $id ) => (int) $id !== $lesson_id );
+            return array( $settings );
+        }
+    }
+    return $value;
+}
+add_filter( 'get_post_metadata', 'bmb_student_quiz_video_prerequisite', 20, 3 );
+
 /** Protect every Tutor completion path, including automatic player/REST completion. */
 function bmb_student_guard_completion_meta( $check, $user_id, $meta_key ) {
     if ( preg_match( '/^_tutor_completed_lesson_id_(\d+)$/', $meta_key, $match ) ) {
