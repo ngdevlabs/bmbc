@@ -58,12 +58,14 @@
             await starting;
         }
         function updateProgress(data) {
+            document.dispatchEvent(new CustomEvent('bmb:video-progress', {detail: {...data, lesson_id: lessonId}}));
+            const remaining = data.missing?.length ? 'Still required: ' + data.missing.join(' ') : '';
             if (data.grandfathered) {
                 status.textContent = 'Your previous class completion is preserved. Reviewing this class is optional.';
                 return;
             }
             if (!dashboard) {
-                status.textContent = data.complete ? 'Class complete: full video watched and quiz passed.' : (data.video_complete ? 'Full video watched. Pass the class quiz to complete this class.' : `${data.percent}% watched. Progress saved.`);
+                status.textContent = data.complete ? 'Class complete: notebook downloaded, full video watched, and quiz passed.' : (remaining || `${data.percent}% watched. Progress saved.`);
                 return;
             }
             dashboard.querySelector('[data-bmb-watch-label]').textContent = `${data.percent}% watched`;
@@ -87,7 +89,7 @@
                     moduleCount.textContent = String(Number(moduleCount.textContent) + 1);
                     dashboard.querySelector('[data-bmb-completion-label]').textContent = 'Completed — review this class anytime.';
                     filterClasses();
-                } else if (!data.complete && data.percent > 0) {
+                } else if (!data.complete && (data.percent > 0 || data.notebook_downloaded)) {
                     row.querySelector('[data-bmb-class-status]').textContent = 'In progress';
                 }
             }
@@ -96,7 +98,7 @@
                 nextLink.href = data.next_url || '#bmb-syllabus';
                 nextLink.textContent = data.next_url ? 'Continue Learning →' : 'Review your completed course →';
             }
-            status.textContent = data.complete ? 'Class complete! Your progress is saved.' : (data.video_complete ? 'Full video watched. Pass the class quiz to complete this class.' : `${data.percent}% watched. Progress saved automatically.`);
+            status.textContent = data.complete ? 'Class complete! Your progress is saved.' : (remaining || `${data.percent}% watched. Progress saved automatically.`);
         }
         async function save() {
             if (saving) {saveAgain = true; return;}
@@ -114,6 +116,7 @@
                 if (saveAgain) {saveAgain = false; save();}
             }
         }
+        document.addEventListener('bmb:requirements', event => { if (Number(event.detail.lesson_id) === lessonId) updateProgress(event.detail); });
         video.addEventListener('play', () => start().catch(error => {status.textContent = error.message;}));
         video.addEventListener('ratechange', () => {if (video.playbackRate > 2) video.playbackRate = 2;});
         video.addEventListener('pause', save);

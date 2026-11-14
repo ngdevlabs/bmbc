@@ -3,6 +3,9 @@
  * BMBC student dashboard and verified class completion.
  */
 defined( 'ABSPATH' ) || exit;
+if ( file_exists( __DIR__ . '/student-requirements.php' ) ) {
+    require_once __DIR__ . '/student-requirements.php';
+}
 
 // Existing WordPress/Tutor login, registration, and Continue links share this setting.
 // Resolve it in code so the new destination deploys without copying database options.
@@ -201,6 +204,9 @@ function bmb_student_historical_completions( $user_id ) {
     if ( ! $user_id ) {
         return array();
     }
+    if ( function_exists( 'bmb_student_prepare_notebook_rules' ) ) {
+        bmb_student_prepare_notebook_rules( $user_id );
+    }
     $key = '_bmb_historical_class_completions';
     if ( ! metadata_exists( 'user', $user_id, $key ) ) {
         $historical = array();
@@ -221,6 +227,7 @@ function bmb_student_class_status( $class, $user_id ) {
     $grandfathered = in_array( (int) $lesson_id, bmb_student_historical_completions( $user_id ), true )
         && (bool) get_user_meta( $user_id, '_tutor_completed_lesson_id_' . $lesson_id, true );
     $video = bmb_student_video_progress( $lesson_id, $user_id );
+    $notebook = function_exists( 'bmb_student_notebook_downloaded' ) ? bmb_student_notebook_downloaded( $lesson_id, $user_id ) : true;
     $quizzes_passed = ! empty( $class['quizzes'] );
     foreach ( $class['quizzes'] as $quiz_id ) {
         $quizzes_passed = bmb_student_quiz_passed( $quiz_id, $user_id ) && $quizzes_passed;
@@ -228,7 +235,8 @@ function bmb_student_class_status( $class, $user_id ) {
     return array(
         'video' => $video,
         'quiz_passed' => $quizzes_passed,
-        'complete' => $grandfathered || ( $video['complete'] && $quizzes_passed ),
+        'notebook_downloaded' => (bool) $notebook,
+        'complete' => $grandfathered || ( $notebook && $video['complete'] && $quizzes_passed ),
         'grandfathered' => $grandfathered,
         'accessible' => bmb_student_can_access( $lesson_id, $user_id ),
     );
@@ -260,7 +268,7 @@ function bmb_student_quiz_video_prerequisite( $value, $post_id, $meta_key ) {
                 continue;
             }
             $lesson_id = (int) $class['lesson']->ID;
-            if ( ! bmb_student_can_access( $lesson_id, $user_id ) || ! bmb_student_video_progress( $lesson_id, $user_id )['complete'] ) {
+            if ( ! bmb_student_can_access( $lesson_id, $user_id ) || ! bmb_student_video_progress( $lesson_id, $user_id )['complete'] || ( function_exists( 'bmb_student_notebook_downloaded' ) && ! bmb_student_notebook_downloaded( $lesson_id, $user_id ) ) ) {
                 return $value;
             }
             $reading = true;
@@ -366,6 +374,9 @@ function bmb_student_save_video( $lesson_id, $user_id, $ranges, $token = '', $st
     bmb_student_sync_completion( $lesson_id, $user_id );
     $status = bmb_student_class_status( $class, $user_id );
     $result = array( 'token' => $progress['session']['token'], 'percent' => $status['video']['percent'], 'video_complete' => $status['video']['complete'], 'complete' => $status['complete'], 'grandfathered' => $status['grandfathered'] );
+    if ( function_exists( 'bmb_student_requirement_state' ) ) {
+        $result = array_merge( $result, bmb_student_requirement_state( $lesson_id, $user_id ) );
+    }
     if ( $status['complete'] ) {
         $result['next_url'] = '';
         foreach ( bmb_student_curriculum() as $module ) {

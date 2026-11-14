@@ -64,6 +64,18 @@ try {
     $set_ranges( array( array( 0, $duration ) ) );
     $set_attempt( 0, 'attempt_ended', 'fail' );
     $assert( ! bmb_student_class_status( $class, $student_id )['complete'], 'Full video plus failed quiz is insufficient.' );
+    $assert( $drip->is_lock_lesson( 504 ) && ! bmb_student_navigation_requirement( 504, $student_id )['allowed'], 'A full video alone cannot unlock the quiz before the notebook download.' );
+    $assert( ! bmb_student_navigation_requirement( 505, $student_id )['allowed'], 'The next class remains locked while the current requirements are incomplete.' );
+    $assert( is_wp_error( bmb_student_record_notebook( 501, 0 ) ) && is_wp_error( bmb_student_record_notebook( 521, $student_id ) ), 'Notebook recording rejects anonymous students and inaccessible paid classes.' );
+    $assert( is_wp_error( bmb_student_record_notebook( 527, $student_id ) ), 'Ordinary pages cannot be submitted as notebook downloads.' );
+    $book = bmb_student_record_notebook( 501, $student_id );
+    $assert( ! is_wp_error( $book ) && bmb_student_notebook_downloaded( 501, $student_id ), 'A real class notebook click is recorded for the student.' );
+    wp_cache_delete( $student_id, 'user_meta' );
+    $assert( bmb_student_notebook_downloaded( 501, $student_id ), 'Notebook completion survives clearing the WordPress metadata cache.' );
+    $record = get_user_meta( $student_id, '_bmb_notebook_downloaded_501', true );
+    bmb_student_record_notebook( 501, $student_id );
+    $assert( $record === get_user_meta( $student_id, '_bmb_notebook_downloaded_501', true ), 'Downloading again preserves the original persisted click record.' );
+    $assert( bmb_student_navigation_requirement( 504, $student_id )['allowed'] && ! bmb_student_navigation_requirement( 505, $student_id )['allowed'], 'Notebook plus full video unlocks the quiz, while the next class still requires a pass.' );
     $assert( ! $drip->is_lock_lesson( 504 ), 'Tutor unlocks the quiz after a full video even without a passing attempt.' );
     $assert( ! tutor_utils()->is_completed_lesson( $lesson_id, $student_id ), 'Unlocking the quiz does not mark the overall class complete.' );
     $assert( $quiz_settings_before === $wpdb->get_var( "SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = 504 AND meta_key = '_content_drip_settings' LIMIT 1" ), 'Quiz unlocking preserves the stored prerequisite configuration.' );
@@ -83,6 +95,10 @@ try {
     $assert( bmb_student_class_status( $class, $student_id )['complete'], 'Full video and a graded passing quiz complete the class.' );
     bmb_student_sync_completion( $lesson_id, $student_id );
     $assert( (bool) get_user_meta( $student_id, '_tutor_completed_lesson_id_' . $lesson_id, true ), 'Verified completion synchronizes into Tutor LMS.' );
+    $assert( bmb_student_navigation_requirement( 505, $student_id )['allowed'], 'Meeting all three requirements unlocks the next class.' );
+    delete_user_meta( $student_id, '_bmb_notebook_downloaded_501' );
+    $assert( ! bmb_student_class_status( $class, $student_id )['complete'], 'A quiz pass and full video still require a notebook record for new completions.' );
+    bmb_student_record_notebook( 501, $student_id );
 
     // A failed retry must not erase an earlier pass.
     $wpdb->insert( $wpdb->prefix . 'tutor_quiz_attempts', array( 'course_id' => bmb_student_course_id(), 'quiz_id' => 504, 'user_id' => $student_id, 'total_marks' => 100, 'earned_marks' => 0, 'attempt_status' => 'attempt_ended', 'result' => 'fail', 'attempt_ended_at' => current_time( 'mysql' ) ) );
