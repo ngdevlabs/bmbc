@@ -435,7 +435,7 @@ function bmb_is_student_learning_page() {
 }
 
 function bmb_is_student_portal_page() {
-    return bmb_is_student_dashboard() || is_page_template( 'page-contact-form.php' ) || bmb_is_student_learning_page();
+    return bmb_is_student_dashboard() || is_page_template( 'page-contact-form.php' ) || bmb_is_student_learning_page() || ( function_exists( 'bmb_is_student_registration_page' ) && bmb_is_student_registration_page() );
 }
 
 /** A single, left-aligned menu shared by the dashboard and the new Contact page. */
@@ -443,8 +443,10 @@ function bmb_student_navigation() {
     $dashboard = tutor_utils()->tutor_dashboard_url();
     ?>
     <nav class="bmb-learning-nav" aria-label="Student navigation">
+        <?php if ( is_user_logged_in() ) : ?>
         <a href="<?php echo esc_url( $dashboard ); ?>" <?php echo bmb_is_student_dashboard() ? 'aria-current="page"' : ''; ?>>Dashboard</a>
         <a href="<?php echo esc_url( $dashboard . '#bmb-syllabus' ); ?>">Syllabus</a>
+        <?php endif; ?>
         <a href="https://ybhstore.company.site/" target="_blank" rel="noopener noreferrer">Store <span class="screen-reader-text">(opens in a new tab)</span></a>
         <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>" <?php echo is_page_template( 'page-contact-form.php' ) ? 'aria-current="page"' : ''; ?>>Contact Us</a>
         <?php if ( is_user_logged_in() ) : ?>
@@ -465,7 +467,7 @@ add_action( 'wp_body_open', static function () {
         }
         ?>
         <div class="bmb-student-header" role="banner"><div class="bmb-student-header-inner">
-            <a href="<?php echo esc_url( tutor_utils()->tutor_dashboard_url() ); ?>" aria-label="Bible Mastery Bootcamp dashboard"><img src="<?php echo esc_url( bmb_logo_url() ); ?>" alt="Bible Mastery Bootcamp" width="180" height="60"></a>
+            <a href="<?php echo esc_url( is_user_logged_in() ? tutor_utils()->tutor_dashboard_url() : home_url( '/' ) ); ?>" aria-label="Bible Mastery Bootcamp"><img src="<?php echo esc_url( bmb_logo_url() ); ?>" alt="Bible Mastery Bootcamp" width="180" height="60"></a>
         </div></div>
         <?php
         if ( $learning ) {

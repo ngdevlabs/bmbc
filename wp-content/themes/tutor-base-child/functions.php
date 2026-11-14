@@ -77,6 +77,10 @@ if ( file_exists( get_stylesheet_directory() . '/inc/student-dashboard.php' ) &&
     require_once get_stylesheet_directory() . '/inc/student-dashboard.php';
 }
 
+if ( file_exists( get_stylesheet_directory() . '/inc/student-registration.php' ) && file_exists( get_stylesheet_directory() . '/student-registration.php' ) ) {
+    require_once get_stylesheet_directory() . '/inc/student-registration.php';
+}
+
 // Keep student registration as simple as the landing page, including when already logged in.
 function bmb_is_student_registration_page() {
     $page_id = function_exists( 'tutor_utils' ) ? (int) tutor_utils()->get_option( 'student_register_page' ) : 0;
