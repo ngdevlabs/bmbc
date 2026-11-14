@@ -72,6 +72,11 @@ function bmb_render_wordpress_logo( $html ) {
     return $tags->get_updated_html();
 }
 
+// FTP deploys files individually; keep Tutor's dashboard until both new PHP files arrive.
+if ( file_exists( get_stylesheet_directory() . '/inc/student-dashboard.php' ) && file_exists( get_stylesheet_directory() . '/student-dashboard.php' ) ) {
+    require_once get_stylesheet_directory() . '/inc/student-dashboard.php';
+}
+
 // Styles for the standalone contact form.
 add_action( 'wp_enqueue_scripts', 'bmb_enqueue_contact_form' );
 function bmb_enqueue_contact_form() {

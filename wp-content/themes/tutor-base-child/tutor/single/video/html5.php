@@ -69,7 +69,7 @@ do_action( 'tutor_lesson/single/before/video/html5' );
 	<div class="tutor-video-player notranslate" translate="no">
 		<input type="hidden" id="tutor_video_tracking_information" value="<?php echo esc_attr( json_encode( $jsonData ?? null ) ); ?>">
 		<div class="loading-spinner" aria-hidden="true"></div>
-		<video poster="<?php echo esc_url( $poster_url ); ?>" class="tutorPlayer" playsinline controls>
+		<video poster="<?php echo esc_url( $poster_url ); ?>" class="tutorPlayer" data-bmb-video="<?php echo absint( get_the_ID() ); ?>" playsinline controls>
 			<source src="<?php echo esc_url( $video_url ); ?>" type="<?php echo esc_attr( tutor_utils()->avalue_dot( 'type', $video_info_array ) ); ?>">
 			<?php
 			// Output all available VTT tracks — mark correct one as default
