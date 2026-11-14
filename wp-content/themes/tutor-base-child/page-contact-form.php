@@ -7,7 +7,7 @@ get_header();
 ?>
 <div class="bmb-contact-header" role="banner">
     <a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Bible Mastery Bootcamp home">
-        <img src="<?php echo esc_url( content_url( '/uploads/bbb-logo.webp' ) ); ?>" alt="Bible Mastery Bootcamp" width="180" height="60">
+        <img src="<?php echo esc_url( bmb_logo_url() ); ?>" alt="Bible Mastery Bootcamp" width="180" height="60">
     </a>
     <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
 </div>

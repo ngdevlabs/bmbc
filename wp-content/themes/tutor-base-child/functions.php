@@ -20,6 +20,58 @@ function tutor_base_child_style() {
  * Your code goes below.
  */
 
+function bmb_logo_url() {
+    return get_stylesheet_directory_uri() . '/assets/images/bbb-logo.webp';
+}
+
+// Render the shared header and landing page logos from a deployed theme asset.
+add_filter( 'kirki_element_generator_image', 'bmb_render_header_logo', 10, 2 );
+function bmb_render_header_logo( $html, $context ) {
+    $element = $context['element'];
+    $properties = $element['properties'] ?? array();
+    // Kirki preserves this logo property ID across shared header instances.
+    $is_header_logo = 'sepd6o1e1' === ( $properties['symbolElPropId'] ?? '' );
+    $is_landing_logo = 'bmb-header-logo' === ( $element['id'] ?? '' );
+
+    if ( $html || ( ! $is_header_logo && ! $is_landing_logo ) ) {
+        return $html;
+    }
+
+    $element['properties']['attributes']['src'] = bmb_logo_url();
+    $element['properties']['attributes']['alt'] = 'Bible Mastery Bootcamp';
+    $element['properties']['load'] = 'eager';
+    // The previous attachment's responsive sources must not restore the old logo.
+    unset( $element['properties']['wp_attachment_id'], $element['properties']['dynamicContent'] );
+    unset( $element['properties']['attributes']['srcset'], $element['properties']['attributes']['sizes'] );
+
+    return call_user_func( $context['generate_element'], $element, $context['options'] );
+}
+
+// Tutor dashboard and invoice templates request the full-size custom logo directly.
+add_filter( 'wp_get_attachment_image_src', 'bmb_custom_logo_image_source', 10, 3 );
+function bmb_custom_logo_image_source( $image, $attachment_id, $size ) {
+    $logo_id = (int) get_theme_mod( 'custom_logo' );
+    if ( $logo_id && 'full' === $size && $logo_id === (int) $attachment_id ) {
+        return array( bmb_logo_url(), 1146, 382, false );
+    }
+    return $image;
+}
+
+// Cover templates that use WordPress's standard custom logo instead of Kirki.
+add_filter( 'get_custom_logo', 'bmb_render_wordpress_logo' );
+function bmb_render_wordpress_logo( $html ) {
+    $tags = new WP_HTML_Tag_Processor( $html );
+    if ( $tags->next_tag( 'IMG' ) ) {
+        $tags->set_attribute( 'src', bmb_logo_url() );
+        $tags->set_attribute( 'alt', 'Bible Mastery Bootcamp' );
+        $tags->set_attribute( 'width', 180 );
+        $tags->set_attribute( 'height', 60 );
+        $tags->remove_attribute( 'srcset' );
+        $tags->remove_attribute( 'sizes' );
+    }
+    return $tags->get_updated_html();
+}
+
 // Styles for the standalone contact form.
 add_action( 'wp_enqueue_scripts', 'bmb_enqueue_contact_form' );
 function bmb_enqueue_contact_form() {
