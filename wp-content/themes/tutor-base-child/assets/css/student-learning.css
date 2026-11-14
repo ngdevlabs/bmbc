@@ -30,3 +30,205 @@ body.bmb-learning-page:has(#wpadminbar) .tutor-quiz-summary-page { --tutor-quiz-
     .bmb-learning-page { --bmb-portal-bar-height: 128px; }
     .bmb-learning-portal-nav { padding: 0 16px; }
 }
+
+/* Dashboard palette, scoped to Tutor learning/review pages. Color values only:
+ * overriding the dark-mode tokens here leaves Tutor's layout and behavior intact. */
+body.bmb-learning-page,
+body.bmb-learning-page [data-tutor-theme] {
+    color-scheme: light;
+    --tutor-surface-base: #f4f6f2;
+    --tutor-surface-l1: #ffffff;
+    --tutor-surface-l1-hover: #edf3e9;
+    --tutor-surface-l2: #e4ece1;
+    --tutor-surface-l2-hover: #d6e3d4;
+    --tutor-surface-l3: #edf3e9;
+    --tutor-surface-brand-dark: #0b372c;
+    --tutor-surface-brand-primary: #176b53;
+    --tutor-surface-brand-primary-2: #10503d;
+    --tutor-surface-brand-secondary: #dcebdd;
+    --tutor-surface-brand-tertiary: #f1f6ed;
+    --tutor-surface-brand-quaternary: #e5eee0;
+    --tutor-surface-sidebar-l1: #ffffff;
+    --tutor-surface-exception2-secondary: #fff0f9;
+    --tutor-surface-exception3-highlight: #cbfd78;
+    --tutor-surface-exception6: #f2e8ff;
+    --tutor-surface-exception7: var(--tutor-brand-900,#263782);
+    --tutor-surface-dark: #0c111d;
+    --tutor-surface-warning: #fff5df;
+    --tutor-surface-warning-hover: #f8ebc9;
+    --tutor-surface-warning-hover-2: #f8ebc9;
+    --tutor-surface-success: #eaf3e7;
+    --tutor-surface-critical: #fce9e6;
+    --tutor-text-primary: #172820;
+    --tutor-text-primary-inverse: #ffffff;
+    --tutor-text-secondary: #34493c;
+    --tutor-text-subdued: #536558;
+    --tutor-text-disabled: #46584d;
+    --tutor-text-brand: #176b53;
+    --tutor-text-brand-hover: #10503d;
+    --tutor-text-brand-secondary: #176b53;
+    --tutor-text-light: #ffffff;
+    --tutor-text-success: #176b53;
+    --tutor-text-critical: #9f231d;
+    --tutor-text-critical-hover: #7f1d18;
+    --tutor-text-warning: #75430c;
+    --tutor-text-caution: #71400c;
+    --tutor-text-exception1: #146476;
+    --tutor-text-exception2: #942559;
+    --tutor-text-exception4: #7a4800;
+    --tutor-text-exception5: #68419b;
+    --tutor-text-highlighted-hover: #34493c;
+    --tutor-icon-idle: #34493c;
+    --tutor-icon-idle-inverse: #ffffff;
+    --tutor-icon-hover: #172820;
+    --tutor-icon-secondary: #536558;
+    --tutor-icon-subdued: #536558;
+    --tutor-icon-disabled: #536558;
+    --tutor-icon-brand: #176b53;
+    --tutor-icon-brand-hover: #10503d;
+    --tutor-icon-brand-secondary: #176b53;
+    --tutor-icon-exception1: #146476;
+    --tutor-icon-exception2: #942559;
+    --tutor-icon-exception4: #7a4800;
+    --tutor-icon-exception5: #68419b;
+    --tutor-icon-success-primary: #176b53;
+    --tutor-icon-success-secondary: #176b53;
+    --tutor-icon-caution: #7a4800;
+    --tutor-icon-critical: #9f231d;
+    --tutor-icon-critical-hover: #7f1d18;
+    --tutor-icon-warning: #75430c;
+    --tutor-icon-warning-secondary: #75430c;
+    --tutor-button-primary: #176b53;
+    --tutor-button-primary-hover: #10503d;
+    --tutor-button-primary-focused: #176b53;
+    --tutor-button-primary-disabled: #e2e8e0;
+    --tutor-button-primary-soft: #e4eee0;
+    --tutor-button-primary-soft-hover: #d5e5d3;
+    --tutor-button-primary-soft-focused: #e4eee0;
+    --tutor-button-disabled: #e2e8e0;
+    --tutor-button-destructive: #9f231d;
+    --tutor-button-destructive-hover: #7f1d18;
+    --tutor-button-destructive-focused: #9f231d;
+    --tutor-button-destructive-soft: #fce9e6;
+    --tutor-button-destructive-soft-hover: #f6d8d3;
+    --tutor-button-destructive-soft-focused: #fce9e6;
+    --tutor-button-success: #176b53;
+    --tutor-button-success-hover: #10503d;
+    --tutor-button-success-focused: #176b53;
+    --tutor-button-secondary: #e4ece1;
+    --tutor-button-secondary-hover: #d6e3d4;
+    --tutor-button-secondary-focused: #e4ece1;
+    --tutor-button-outline-inverse: #fff;
+    --tutor-button-outline-hover: #e4ece1;
+    --tutor-button-outline-focused-inverse: #fff;
+    --tutor-button-ghost-hover: #e4ece1;
+    --tutor-border-idle: #dce5de;
+    --tutor-border-idle2: #758b7a;
+    --tutor-border-hover: #758b7a;
+    --tutor-border-tertiary: #758b7a;
+    --tutor-border-inverse: #fff;
+    --tutor-border-brand: #176b53;
+    --tutor-border-brand-secondary: #758b7a;
+    --tutor-border-brand-tertiary: #176b53;
+    --tutor-border-dark: #0c111d;
+    --tutor-border-success: #176b53;
+    --tutor-border-success-secondary: #176b53;
+    --tutor-border-warning: #976120;
+    --tutor-border-warning-secondary: #976120;
+    --tutor-border-warning-tertiary: #976120;
+    --tutor-border-error: #9f231d;
+    --tutor-border-error-secondary: #9f231d;
+    --tutor-border-error-tertiary: #9f231d;
+    --tutor-border-exception6: #9747ff;
+    --tutor-tab-sidebar-l2: #ffffff;
+    --tutor-tab-sidebar-l2-hover: #edf3e9;
+    --tutor-tab-sidebar-l2-active: #e4eee0;
+    --tutor-tab-sidebar-l4-hover: #edf3e9;
+    --tutor-tab-sidebar-l4-active: #e4eee0;
+    --tutor-tab-l3: #ffffff;
+    --tutor-tab-l3-hover: #edf3e9;
+    --tutor-tab-l3-active: #e4eee0;
+    --tutor-tab-l3-active-hover: #e4eee0;
+    --tutor-actions-success-primary: #176b53;
+    --tutor-actions-success-secondary: #dcebdd;
+    --tutor-actions-success-tertiary: #eaf3e7;
+    --tutor-actions-success-exception: #176b53;
+    --tutor-actions-warning-primary: #976120;
+    --tutor-actions-warning-secondary: #f8ebc9;
+    --tutor-actions-warning-tertiary: #fff5df;
+    --tutor-actions-warning-exception: #976120;
+    --tutor-actions-brand-primary: #176b53;
+    --tutor-actions-brand-secondary: #dcebdd;
+    --tutor-actions-brand-tertiary: #e4eee0;
+    --tutor-actions-gray-empty: #edf3e9;
+    --tutor-actions-gray-secondary: #e5ebe2;
+    --tutor-actions-gray-tertiary: #dce5de;
+    --tutor-actions-gray-quaternary: #c5d3c3;
+    --tutor-actions-critical-primary: #9f231d;
+    --tutor-actions-critical-secondary: #fce9e6;
+    --tutor-actions-exception3-highlight: #cbfd78;
+    --tutor-actions-caution: #fac515;
+    --tutor-actions-caution-secondary: #fef7c3;
+    --tutor-actions-inverse: #fff;
+    --tutor-actions-exception5: #9747ff;
+    --tutor-actions-exception6: #f2e8ff;
+    --tutor-quiz-idle: #ffffff;
+    --tutor-quiz-hover: #edf3e9;
+    --tutor-visual-gray-1: #ffffff;
+    --tutor-visual-gray-2: #e4ece1;
+    --tutor-visual-gray-3: #bdcbbf;
+    --tutor-visual-gray-4: #34493c;
+    --tutor-visual-brand-1: #176b53;
+    --tutor-visual-brand-2: #79ab8e;
+    --tutor-visual-brand-3: #dcebdd;
+    --tutor-visual-success-1: #176b53;
+    --tutor-visual-success-2: #176b53;
+    --tutor-visual-critical-1: #9f231d;
+    --tutor-visual-critical-2: #fce9e6;
+    --tutor-visual-caution-1: #fde272;
+    --tutor-visual-caution-2: #a15c07;
+    --tutor-visual-caution-3: #713b12;
+    --tutor-visual-orange-1: #ff8904;
+    --tutor-visual-exception-1: #cbfd78;
+    --tutor-visual-exception-2: #f4f433;
+    --tutor-visual-exception-3: #ee0097;
+    --tutor-brand-50: #f4f8f0;
+    --tutor-brand-100: #edf3e9;
+    --tutor-brand-200: #dcebdd;
+    --tutor-brand-300: #b8d3c0;
+    --tutor-brand-400: #79ab8e;
+    --tutor-brand-450: #347b5d;
+    --tutor-brand-500: #24785c;
+    --tutor-brand-600: #176b53;
+    --tutor-brand-700: #10503d;
+    --tutor-brand-800: #0d4334;
+    --tutor-brand-900: #0b372c;
+    --tutor-brand-950: #082a21;
+    --tutor-color-primary: #176b53;
+    --tutor-color-primary-rgb: 23, 107, 83;
+    --tutor-color-primary-hover: #10503d;
+    --tutor-color-secondary: #34493c;
+    --tutor-body-color: #172820;
+    --tutor-body-color-rgb: 23, 40, 32;
+    --tutor-color-success: #176b53;
+    --tutor-color-danger: #9f231d;
+    --tutor-color-muted: #536558;
+}
+body.bmb-learning-page { background-color: #f4f6f2; color: #172820; }
+.bmb-learning-page input::placeholder,
+.bmb-learning-page textarea::placeholder { color: #536558; opacity: 1; }
+.bmb-learning-page :is(input:not([type="hidden"]), select, textarea) { border-color: #758b7a; accent-color: #176b53; }
+.bmb-learning-page :is(button:disabled, input:disabled, select:disabled, textarea:disabled, .tutor-btn.disabled, .tutor-btn[aria-disabled="true"]) { color: #46584d; background-color: #e2e8e0; border-color: #758b7a; opacity: 1; }
+.bmb-learning-page :is(a, button, input, select, textarea):focus-visible { outline-color: #176b53; }
+/* Video frames vary in brightness; controls need a predictable high-contrast surface. */
+.bmb-learning-page .plyr {
+    --plyr-color-main: #176b53;
+    --plyr-video-control-color: #fff;
+    --plyr-video-control-color-hover: #fff;
+    --plyr-video-control-background-hover: #176b53;
+    --plyr-menu-background: #fff;
+    --plyr-menu-color: #172820;
+    --plyr-tooltip-background: #172820;
+    --plyr-tooltip-color: #fff;
+}
+.bmb-learning-page .plyr--video .plyr__controls { background: #172820; color: #fff; }
