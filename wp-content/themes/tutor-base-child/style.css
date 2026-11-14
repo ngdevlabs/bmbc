@@ -1,0 +1,233 @@
+/**
+ * Theme Name:     Tutor Base Child
+ * Author:         Jeffrey Wilson
+ * Template:       tutorbase
+ * Text Domain:	   tutor-base-child
+ * Description:    A lightweight starter theme for Tutor LMS.
+ * Version:        1.0.2
+ */
+
+/* Hide Droip Footer on Tutor LMS Learning Area to prevent sidebar overlapping */
+body.single-lesson footer#footer,
+body.single-tutor_quiz footer#footer,
+body.single-tutor_assignments footer#footer {
+    display: none !important;
+}
+
+.tutor-learning-sidebar {
+    z-index: 999 !important;
+}
+
+/* ==========================================================================
+   Modern & Premium Tutor LMS Login & Registration Form Styling
+   ========================================================================== */
+
+/* Main Login Form Wrapper Card */
+.tutor-login-wrap,
+.tutor-card.tutor-login-wrap,
+.tutor-template-segment.tutor-login-wrap,
+.tutor-modal.tutor-login-modal .tutor-modal-content,
+.tutor-login-form-wrapper {
+    max-width: 440px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 30px 24px !important;
+    background: #ffffff !important;
+   
+  
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+/* Typography across all elements inside login/registration */
+.tutor-login-wrap,
+.tutor-login-wrap *,
+.tutor-login-form-wrapper,
+.tutor-login-form-wrapper *,
+#tutor-login-form,
+#tutor-login-form *,
+#tutor-registration-wrap,
+#tutor-registration-wrap * {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    box-sizing: border-box !important;
+}
+
+/* Header Greeting */
+.tutor-login-wrap .tutor-h3,
+.tutor-login-wrap .tutor-fs-4,
+.tutor-login-wrap .tutor-fs-5,
+.tutor-login-wrap h3,
+.tutor-login-form-wrapper .tutor-h3,
+.tutor-login-form-wrapper h3 {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    margin-top: 0 !important;
+    margin-bottom: 24px !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* Form Container */
+#tutor-login-form,
+form#tutor-login-form {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 100% !important;
+}
+
+/* Input Field Rows */
+.tutor-login-wrap .tutor-input-field,
+.tutor-login-form-wrapper .tutor-input-field,
+#tutor-login-form .tutor-input-field {
+    margin-bottom: 18px !important;
+    position: relative !important;
+    display: block !important;
+}
+
+/* Username/Email & Password Input Controls */
+.tutor-login-wrap input[type="text"],
+.tutor-login-wrap input[type="password"],
+.tutor-login-wrap .tutor-form-control,
+.tutor-login-wrap .tutor-input,
+.tutor-login-form-wrapper input[type="text"],
+.tutor-login-form-wrapper input[type="password"],
+.tutor-login-form-wrapper .tutor-form-control,
+.tutor-login-form-wrapper .tutor-input,
+#tutor-login-form input[type="text"],
+#tutor-login-form input[type="password"],
+#tutor-login-form .tutor-form-control,
+#tutor-login-form .tutor-input {
+    width: 100% !important;
+    height: 48px !important;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    color: #1f2937 !important;
+    background-color: #f9fafb !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
+    outline: none !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* Focus State for Inputs - Green #1b8366 */
+.tutor-login-wrap input:focus,
+.tutor-login-form-wrapper input:focus,
+#tutor-login-form input:focus {
+    background-color: #ffffff !important;
+    border-color: #1b8366 !important;
+    box-shadow: 0 0 0 4px rgba(27, 131, 102, 0.15) !important;
+}
+
+/* Checkbox Accent Color - Green #1b8366 */
+.tutor-login-wrap input[type="checkbox"],
+.tutor-login-form-wrapper input[type="checkbox"],
+#tutor-login-form input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    accent-color: #1b8366 !important;
+    cursor: pointer !important;
+    border-radius: 4px !important;
+}
+
+/* Links (Forgot Password & Register Now) - Green #1b8366 */
+.tutor-login-wrap a,
+.tutor-login-form-wrapper a,
+#tutor-login-form a,
+#tutor-registration-wrap a,
+a.tutor-btn-link,
+a.tutor-btn-link-gray,
+a[href*="retrieve-password"],
+a[href*="lost-password"] {
+    color: #1b8366 !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease !important;
+}
+
+.tutor-login-wrap a:hover,
+.tutor-login-form-wrapper a:hover,
+#tutor-login-form a:hover,
+#tutor-registration-wrap a:hover,
+a.tutor-btn-link:hover,
+a.tutor-btn-link-gray:hover,
+a[href*="retrieve-password"]:hover,
+a[href*="lost-password"]:hover {
+    color: #14614b !important;
+    text-decoration: underline !important;
+}
+
+/* Submit Button ("Sign In") - Green #1b8366 */
+.tutor-login-wrap button[type="submit"],
+.tutor-login-wrap .tutor-btn-primary,
+.tutor-login-form-wrapper button[type="submit"],
+.tutor-login-form-wrapper .tutor-btn-primary,
+#tutor-login-form button[type="submit"],
+#tutor-login-form .tutor-btn-primary,
+#tutor-registration-wrap button[type="submit"],
+#tutor-registration-wrap .tutor-btn-primary {
+    width: 100% !important;
+    height: 48px !important;
+    background-color: #1b8366 !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(27, 131, 102, 0.25) !important;
+    transition: all 0.2s ease-in-out !important;
+    margin-top: 8px !important;
+    margin-bottom: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.tutor-login-wrap button[type="submit"]:hover,
+.tutor-login-wrap .tutor-btn-primary:hover,
+.tutor-login-form-wrapper button[type="submit"]:hover,
+.tutor-login-form-wrapper .tutor-btn-primary:hover,
+#tutor-login-form button[type="submit"]:hover,
+#tutor-login-form .tutor-btn-primary:hover,
+#tutor-registration-wrap button[type="submit"]:hover,
+#tutor-registration-wrap .tutor-btn-primary:hover {
+    background-color: #14614b !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 16px rgba(27, 131, 102, 0.35) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .tutor-login-wrap,
+    .tutor-login-form-wrapper {
+        padding: 20px 16px !important;
+        margin: 12px auto !important;
+        border-radius: 12px !important;
+    }
+}
+
+/* ==========================================================================
+   Client Feedback: Hide Notes, Take Note button, and Sidebar "... More" Section
+   ========================================================================== */
+
+/* 1. Hide "Take Note" button & "Notes" Tab */
+#tutor-lesson-nav-take-note-btn,
+[data-tutor-nav-target="tutor-course-spotlight-notes"],
+.tutor-course-spotlight-nav li a[data-tutor-query-value="notes"],
+.tutor-tab-item[data-tutor-tab="notes"] {
+    display: none !important;
+}
+
+/* 2. Hide Sidebar "... More" section at the bottom of the learning area left column */
+.tutor-learning-sidebar-pages,
+.tutor-sidebar-restore-dropdown,
+.tutor-learning-pages,
+.tutor-learning-sidebar .tutor-learning-sidebar-pages {
+    display: none !important;
+}
