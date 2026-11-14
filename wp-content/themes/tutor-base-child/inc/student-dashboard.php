@@ -281,6 +281,11 @@ function bmb_student_quiz_video_prerequisite( $value, $post_id, $meta_key ) {
 }
 add_filter( 'get_post_metadata', 'bmb_student_quiz_video_prerequisite', 20, 3 );
 
+// BMBC class completion is automatic after the full video and a passing quiz.
+add_filter( 'tutor_learning_area_lesson_mark_as_complete', static function ( $html ) {
+    return bmb_student_class( get_the_ID() ) ? '' : $html;
+}, 100 );
+
 /** Protect every Tutor completion path, including automatic player/REST completion. */
 function bmb_student_guard_completion_meta( $check, $user_id, $meta_key ) {
     if ( preg_match( '/^_tutor_completed_lesson_id_(\d+)$/', $meta_key, $match ) ) {
