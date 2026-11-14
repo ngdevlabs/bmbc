@@ -77,6 +77,20 @@ if ( file_exists( get_stylesheet_directory() . '/inc/student-dashboard.php' ) &&
     require_once get_stylesheet_directory() . '/inc/student-dashboard.php';
 }
 
+// Keep student registration as simple as the landing page, including when already logged in.
+function bmb_is_student_registration_page() {
+    $page_id = function_exists( 'tutor_utils' ) ? (int) tutor_utils()->get_option( 'student_register_page' ) : 0;
+    return ( $page_id > 0 && is_page( $page_id ) ) || is_page( 'student-registration-page' );
+}
+add_filter( 'kirki_show_custom_section_footer', static function ( $show ) {
+    return bmb_is_student_registration_page() ? false : $show;
+} );
+add_action( 'wp_footer', static function () {
+    if ( bmb_is_student_registration_page() ) {
+        echo '<footer class="bmb-simple-footer">Copyright &copy; ' . esc_html( wp_date( 'Y' ) ) . ' Israeltrue</footer>';
+    }
+}, 5 );
+
 // Styles for the standalone contact form.
 add_action( 'wp_enqueue_scripts', 'bmb_enqueue_contact_form' );
 function bmb_enqueue_contact_form() {

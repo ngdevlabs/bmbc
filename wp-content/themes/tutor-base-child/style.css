@@ -7,6 +7,21 @@
  * Version:        1.0.2
  */
 
+/* Student registration uses the landing page's simple copyright footer. */
+.bmb-simple-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    padding: 10px 24px;
+    background: #fff;
+    color: #000;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+}
+
 /* Landing page password visibility control. */
 .kirki-page .bmb-password-field {
     position: relative;
