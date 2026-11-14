@@ -1,0 +1,32 @@
+name: Deploy BMBC child theme
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bmbc-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload child theme to Shinjiru
+        working-directory: wp-content/themes/tutor-base-child
+        env:
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        shell: bash
+        run: |
+          while IFS= read -r -d '' file; do
+            remote_path=$(python3 -c 'import sys; from urllib.parse import quote; print(quote(sys.argv[1]))' "$file")
+            curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+              --user "bmbc-deploy@israeltrue.com:${FTP_PASSWORD}" \
+              --upload-file "$file" \
+              "ftp://capybara.myhostpl.com:21/$remote_path"
+          done < <(git ls-files -z -- .)
