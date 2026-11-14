@@ -358,6 +358,51 @@ add_action( 'wp_ajax_bmb_student_video', static function () {
 function bmb_is_student_dashboard() {
     return function_exists( 'tutor_utils' ) && is_user_logged_in() && tutor_utils()->is_tutor_frontend_dashboard() && ! get_query_var( 'tutor_dashboard_page' );
 }
+
+function bmb_is_student_portal_page() {
+    return bmb_is_student_dashboard() || is_page_template( 'page-contact-form.php' );
+}
+
+/** A single, left-aligned menu shared by the dashboard and the new Contact page. */
+function bmb_student_navigation() {
+    $dashboard = tutor_utils()->tutor_dashboard_url();
+    ?>
+    <nav class="bmb-learning-nav" aria-label="Student navigation">
+        <a href="<?php echo esc_url( $dashboard ); ?>" <?php echo bmb_is_student_dashboard() ? 'aria-current="page"' : ''; ?>>Dashboard</a>
+        <a href="<?php echo esc_url( $dashboard . '#bmb-syllabus' ); ?>">Syllabus</a>
+        <a href="https://ybhstore.company.site/" target="_blank" rel="noopener noreferrer">Store <span class="screen-reader-text">(opens in a new tab)</span></a>
+        <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>" <?php echo is_page_template( 'page-contact-form.php' ) ? 'aria-current="page"' : ''; ?>>Contact Us</a>
+        <?php if ( is_user_logged_in() ) : ?>
+            <a class="bmb-logout" href="<?php echo esc_url( wp_logout_url( home_url( '/' ) ) ); ?>">Log Out</a>
+        <?php else : ?>
+            <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Log In</a>
+        <?php endif; ?>
+    </nav>
+    <?php
+}
+
+add_filter( 'kirki_show_custom_section_header', static function ( $show ) { return bmb_is_student_portal_page() ? false : $show; } );
+add_action( 'wp_body_open', static function () {
+    if ( bmb_is_student_portal_page() ) {
+        ?>
+        <div class="bmb-student-header" role="banner"><div class="bmb-student-header-inner">
+            <a href="<?php echo esc_url( tutor_utils()->tutor_dashboard_url() ); ?>" aria-label="Bible Mastery Bootcamp dashboard"><img src="<?php echo esc_url( bmb_logo_url() ); ?>" alt="Bible Mastery Bootcamp" width="180" height="60"></a>
+        </div></div>
+        <?php
+    }
+}, 2 );
+
+// Retire the overview URL, preserving the course, lessons, quizzes, and enrollments.
+add_action( 'template_redirect', static function () {
+    if ( ! is_singular( 'courses' ) || get_queried_object_id() !== bmb_student_course_id() ) {
+        return;
+    }
+    if ( isset( $_GET['action'] ) && 'kirki' === $_GET['action'] && current_user_can( 'edit_post', bmb_student_course_id() ) ) {
+        return;
+    }
+    wp_safe_redirect( is_user_logged_in() ? tutor_utils()->tutor_dashboard_url() : home_url( '/' ), 302 );
+    exit;
+}, 2 );
 add_filter( 'template_include', static function ( $template ) {
     return bmb_is_student_dashboard() ? get_stylesheet_directory() . '/student-dashboard.php' : $template;
 }, 110 );
@@ -372,6 +417,9 @@ add_action( 'template_redirect', static function () {
 add_filter( 'kirki_show_custom_section_footer', static function ( $show ) { return bmb_is_student_dashboard() ? false : $show; } );
 
 add_action( 'wp_enqueue_scripts', static function () {
+    if ( bmb_is_student_portal_page() ) {
+        wp_enqueue_style( 'bmb-student-navigation', get_stylesheet_directory_uri() . '/assets/css/student-navigation.css', array( 'child-style' ), filemtime( get_stylesheet_directory() . '/assets/css/student-navigation.css' ) );
+    }
     $dashboard = bmb_is_student_dashboard();
     $lesson = is_singular( 'lesson' ) && bmb_student_class( get_queried_object_id() );
     if ( ! $dashboard && ! $lesson ) {
@@ -418,64 +466,3 @@ function bmb_student_resources( $lesson_id ) {
     }
     return array_values( $resources );
 }
-
-/** Turn the authored syllabus sections into native, keyboard-accessible accordions. */
-function bmb_syllabus_accordions( $content ) {
-    if ( strpos( $content, 'bmb-syllabus-module' ) !== false || ! preg_match( '/Module\s+(?:One|Two|Three|Four)/iu', wp_strip_all_tags( $content ) ) ) {
-        return $content;
-    }
-    $doc = new DOMDocument();
-    $previous_errors = libxml_use_internal_errors( true );
-    $doc->loadHTML( '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div id="bmb-syllabus-source">' . $content . '</div></body></html>' );
-    libxml_clear_errors();
-    libxml_use_internal_errors( $previous_errors );
-    $source = $doc->getElementById( 'bmb-syllabus-source' );
-    if ( ! $source ) {
-        return $content;
-    }
-    // The imported Wix layout nests module headings at different depths. Flatten
-    // its layout wrappers while retaining authored paragraphs, lists, links, and images.
-    $blocks = array();
-    $collect = static function ( $node ) use ( &$collect, &$blocks ) {
-        if ( $node instanceof DOMElement && in_array( strtolower( $node->tagName ), array( 'div', 'section', 'article' ), true ) ) {
-            foreach ( $node->childNodes as $child ) {
-                $collect( $child );
-            }
-        } else {
-            $blocks[] = $node->cloneNode( true );
-        }
-    };
-    foreach ( $source->childNodes as $node ) {
-        $collect( $node );
-    }
-    $output = $doc->createElement( 'div' );
-    $output->setAttribute( 'class', 'bmb-syllabus-content' );
-    $destination = $output;
-    $modules = 0;
-    foreach ( $blocks as $block ) {
-        if ( $block instanceof DOMElement && 'h2' === strtolower( $block->tagName ) && preg_match( '/^Module\s+(?:One|Two|Three|Four)\b/iu', trim( $block->textContent ) ) ) {
-            $details = $doc->createElement( 'details' );
-            $details->setAttribute( 'class', 'bmb-syllabus-module' );
-            $details->setAttribute( 'name', 'bmb-syllabus-modules' );
-            $summary = $doc->createElement( 'summary' );
-            $summary->appendChild( $doc->createTextNode( trim( $block->textContent ) ) );
-            $details->appendChild( $summary );
-            $destination = $doc->createElement( 'div' );
-            $destination->setAttribute( 'class', 'bmb-syllabus-module-body' );
-            $details->appendChild( $destination );
-            $output->appendChild( $details );
-            ++$modules;
-        } else {
-            $destination->appendChild( $block );
-        }
-    }
-    return 4 === $modules ? $doc->saveHTML( $output ) : $content;
-}
-add_filter( 'the_content', static function ( $content ) {
-    return is_singular( 'courses' ) && get_queried_object_id() === bmb_student_course_id() ? bmb_syllabus_accordions( $content ) : $content;
-}, 20 );
-add_action( 'wp_enqueue_scripts', static function () {
-    if ( is_singular( 'courses' ) && get_queried_object_id() === bmb_student_course_id() ) {
-        wp_enqueue_style( 'bmb-syllabus', get_stylesheet_directory_uri() . '/assets/css/syllabus.css', array( 'child-style' ), filemtime( get_stylesheet_directory() . '/assets/css/syllabus.css' ) );
-    }
-} );

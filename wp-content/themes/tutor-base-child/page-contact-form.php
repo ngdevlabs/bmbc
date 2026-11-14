@@ -5,13 +5,8 @@
 defined( 'ABSPATH' ) || exit;
 get_header();
 ?>
-<div class="bmb-contact-header" role="banner">
-    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Bible Mastery Bootcamp home">
-        <img src="<?php echo esc_url( bmb_logo_url() ); ?>" alt="Bible Mastery Bootcamp" width="180" height="60">
-    </a>
-    <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
-</div>
 <main class="bmb-contact-main">
+    <div class="bmb-portal-container"><?php if ( function_exists( 'bmb_student_navigation' ) ) { bmb_student_navigation(); } ?></div>
     <section class="bmb-contact-card" aria-labelledby="contact-title">
         <h1 id="contact-title">Contact Us</h1>
         <p>Have a question? Leave your details and message below.</p>

@@ -21,8 +21,6 @@
 .bmb-student-dashboard button, .bmb-student-dashboard input { font: inherit; }
 .bmb-student-dashboard a:focus-visible, .bmb-student-dashboard button:focus-visible, .bmb-student-dashboard summary:focus-visible { outline: 3px solid #338669; outline-offset: 4px; }
 .bmb-student-dashboard [hidden] { display: none !important; }
-.bmb-learning-nav { display: flex; gap: 28px; align-items: center; border-bottom: 1px solid var(--bmb-line); padding: 22px 0; font-size: 14px; font-weight: 600; }
-.bmb-learning-nav .bmb-logout { margin-left: auto; color: #334b3d; }
 .bmb-dashboard-heading { padding: 40px 0 24px; display: flex; gap: 24px; justify-content: space-between; align-items: center; }
 .bmb-student-dashboard .bmb-eyebrow { font-size: 11px; font-weight: 750; letter-spacing: 1.7px; color: var(--bmb-green); }
 .bmb-dashboard-heading > div > p:last-child { color: var(--bmb-muted); font-size: 15px; }
@@ -97,7 +95,6 @@
 }
 @media (max-width: 700px) {
     .bmb-student-dashboard { padding: 0 16px 40px; }
-    .bmb-learning-nav { gap: 18px; font-size: 12px; padding: 18px 0; }
     .bmb-dashboard-heading { padding: 28px 0 20px; align-items: start; }
     .bmb-dashboard-heading h1 { font-size: 27px; letter-spacing: -0.7px; }
     .bmb-dashboard-heading > div > p:last-child { font-size: 13px; }
@@ -123,8 +120,4 @@
     .bmb-class-list li { padding: 15px 14px; gap: 10px; flex-wrap: wrap; }
     .bmb-class-list a { flex-basis: calc(100% - 40px); }
     .bmb-class-status { margin-left: 38px; }
-}
-/* The shared Kirki header becomes fixed at this breakpoint. */
-@media (max-width: 767px) {
-    .bmb-student-dashboard { padding-top: 72px; }
 }

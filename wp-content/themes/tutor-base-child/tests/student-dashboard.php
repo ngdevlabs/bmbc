@@ -122,13 +122,17 @@ try {
     delete_user_meta( $historical_student_id, '_tutor_completed_lesson_id_501' );
     $assert( ! bmb_student_class_status( $class, $historical_student_id )['complete'], 'An explicitly cleared completion is not resurrected from the historical snapshot.' );
 
-    $syllabus = get_post_field( 'post_content', bmb_student_course_id() );
-    $accordions = bmb_syllabus_accordions( $syllabus );
-    $assert( substr_count( $accordions, 'class="bmb-syllabus-module"' ) === 4, 'The syllabus renders exactly one accordion per module.' );
-    $text = static fn( $html ) => preg_replace( '/[\s\x{00a0}]+/u', '', html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES, 'UTF-8' ) );
-    $assert( $text( $syllabus ) === $text( $accordions ), 'Accordion conversion preserves all authored syllabus text.' );
-    $assert( substr_count( $syllabus, '<img ' ) === substr_count( $accordions, '<img ' ), 'Accordion conversion preserves syllabus images.' );
-    $assert( bmb_syllabus_accordions( $accordions ) === $accordions, 'Repeated content filtering does not nest or duplicate accordions.' );
+    $previous_user = get_current_user_id();
+    wp_set_current_user( $student_id );
+    ob_start();
+    bmb_student_navigation();
+    $navigation = ob_get_clean();
+    wp_set_current_user( $previous_user );
+    $assert( strpos( $navigation, '>Dashboard</a>' ) !== false && strpos( $navigation, 'Course Home' ) === false, 'The shared menu returns to Dashboard and removes Course Home.' );
+    $assert( strpos( $navigation, 'href="https://ybhstore.company.site/" target="_blank" rel="noopener noreferrer"' ) !== false, 'Store points to the requested external storefront in a safe new tab.' );
+    $assert( strpos( $navigation, 'href="' . esc_url( home_url( '/contact/' ) ) . '"' ) !== false && strpos( $navigation, '/contact-us/' ) === false, 'Contact navigation uses only the new Contact page.' );
+    $assert( strpos( $navigation, '#bmb-syllabus' ) !== false, 'Syllabus navigation points to the dashboard class list.' );
+    $assert( 'courses' === get_post_type( bmb_student_course_id() ) && count( bmb_student_curriculum() ) === 4, 'Retiring the overview preserves the underlying course and modules.' );
     $dashboard_url = tutor_utils()->tutor_dashboard_url();
     $assert( apply_filters( 'login_redirect', get_permalink( bmb_student_course_id() ), '', get_userdata( $student_id ) ) === $dashboard_url, 'Student WordPress login redirects to the dashboard rather than the syllabus.' );
     $assert( apply_filters( 'tutor_after_login_redirect_url', get_permalink( bmb_student_course_id() ) ) === $dashboard_url, 'Tutor login uses the same dashboard destination.' );

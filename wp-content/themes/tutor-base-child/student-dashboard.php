@@ -34,12 +34,7 @@ get_header();
 ?>
 <main id="bmb-student-dashboard" class="bmb-student-dashboard">
     <div class="bmb-dashboard-container">
-        <nav class="bmb-learning-nav" aria-label="Student navigation">
-            <a href="<?php echo esc_url( $course_url ); ?>">Course Home</a>
-            <a href="#bmb-syllabus">Syllabus</a>
-            <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">Contact Us</a>
-            <a class="bmb-logout" href="<?php echo esc_url( wp_logout_url( home_url( '/' ) ) ); ?>">Log Out <span aria-hidden="true">↗</span></a>
-        </nav>
+        <?php bmb_student_navigation(); ?>
 
         <div class="bmb-dashboard-heading">
             <div><p class="bmb-eyebrow">BIBLE MASTERY BOOT CAMP</p><h1><?php echo esc_html( $name ); ?>’s learning dashboard</h1><p>Pick up where you left off. Your next step is right here.</p></div>
