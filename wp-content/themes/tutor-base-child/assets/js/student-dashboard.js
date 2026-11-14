@@ -58,6 +58,10 @@
             await starting;
         }
         function updateProgress(data) {
+            if (data.grandfathered) {
+                status.textContent = 'Your previous class completion is preserved. Reviewing this class is optional.';
+                return;
+            }
             if (!dashboard) {
                 status.textContent = data.complete ? 'Class complete: full video watched and quiz passed.' : (data.video_complete ? 'Full video watched. Pass the class quiz to complete this class.' : `${data.percent}% watched. Progress saved.`);
                 return;

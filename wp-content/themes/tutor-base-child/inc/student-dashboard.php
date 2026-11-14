@@ -171,8 +171,30 @@ function bmb_student_passed_attempts( $user_id, $refresh = false ) {
     return $cache[ $user_id ];
 }
 
+/** Snapshot old Tutor completions once, before any new completion write is allowed. */
+function bmb_student_historical_completions( $user_id ) {
+    if ( ! $user_id ) {
+        return array();
+    }
+    $key = '_bmb_historical_class_completions';
+    if ( ! metadata_exists( 'user', $user_id, $key ) ) {
+        $historical = array();
+        foreach ( bmb_student_curriculum() as $module ) {
+            foreach ( $module['classes'] as $lesson_id => $class ) {
+                if ( get_user_meta( $user_id, '_tutor_completed_lesson_id_' . $lesson_id, true ) ) {
+                    $historical[] = (int) $lesson_id;
+                }
+            }
+        }
+        add_user_meta( $user_id, $key, $historical, true );
+    }
+    return (array) get_user_meta( $user_id, $key, true );
+}
+
 function bmb_student_class_status( $class, $user_id ) {
     $lesson_id = $class['lesson']->ID;
+    $grandfathered = in_array( (int) $lesson_id, bmb_student_historical_completions( $user_id ), true )
+        && (bool) get_user_meta( $user_id, '_tutor_completed_lesson_id_' . $lesson_id, true );
     $video = bmb_student_video_progress( $lesson_id, $user_id );
     $quizzes_passed = ! empty( $class['quizzes'] );
     foreach ( $class['quizzes'] as $quiz_id ) {
@@ -181,8 +203,8 @@ function bmb_student_class_status( $class, $user_id ) {
     return array(
         'video' => $video,
         'quiz_passed' => $quizzes_passed,
-        'complete' => $video['complete'] && $quizzes_passed,
-        'previously_complete' => (bool) get_user_meta( $user_id, '_tutor_completed_lesson_id_' . $lesson_id, true ),
+        'complete' => $grandfathered || ( $video['complete'] && $quizzes_passed ),
+        'grandfathered' => $grandfathered,
         'accessible' => bmb_student_can_access( $lesson_id, $user_id ),
     );
 }
@@ -276,7 +298,7 @@ function bmb_student_save_video( $lesson_id, $user_id, $ranges, $token = '', $st
     update_user_meta( $user_id, '_bmb_video_' . $lesson_id, $progress );
     bmb_student_sync_completion( $lesson_id, $user_id );
     $status = bmb_student_class_status( $class, $user_id );
-    $result = array( 'token' => $progress['session']['token'], 'percent' => $status['video']['percent'], 'video_complete' => $status['video']['complete'], 'complete' => $status['complete'] );
+    $result = array( 'token' => $progress['session']['token'], 'percent' => $status['video']['percent'], 'video_complete' => $status['video']['complete'], 'complete' => $status['complete'], 'grandfathered' => $status['grandfathered'] );
     if ( $status['complete'] ) {
         $result['next_url'] = '';
         foreach ( bmb_student_curriculum() as $module ) {

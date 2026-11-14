@@ -13,6 +13,7 @@ if ( is_wp_error( $student_id ) ) {
     throw new RuntimeException( $student_id->get_error_message() );
 }
 $checks = 0;
+$historical_student_id = 0;
 $assert = static function ( $condition, $message ) use ( &$checks ) {
     if ( ! $condition ) {
         throw new RuntimeException( $message );
@@ -104,9 +105,28 @@ try {
 
     $assert( ! bmb_student_video( 623 )['url'], 'The existing unconfigured class video is detected rather than fabricated.' );
     $assert( count( bmb_student_resources( 505 ) ) === 3, 'Existing notebook and both supporting videos are discovered.' );
+
+    $historical_student_id = wp_insert_user( array( 'user_login' => 'bmb-check-history-' . wp_generate_password( 8, false ), 'user_pass' => wp_generate_password( 32, true ), 'role' => 'subscriber' ) );
+    if ( is_wp_error( $historical_student_id ) ) {
+        throw new RuntimeException( $historical_student_id->get_error_message() );
+    }
+    // Seed a pre-rollout record directly, as it existed before the new write guard.
+    $wpdb->insert( $wpdb->usermeta, array( 'user_id' => $historical_student_id, 'meta_key' => '_tutor_completed_lesson_id_501', 'meta_value' => time() - DAY_IN_SECONDS ) );
+    wp_cache_delete( $historical_student_id, 'user_meta' );
+    $historical = bmb_student_class_status( $class, $historical_student_id );
+    $assert( $historical['complete'] && $historical['grandfathered'], 'Historical class completions are honored without rewatching or retaking a quiz.' );
+    $assert( ! $historical['video']['complete'] && ! $historical['quiz_passed'], 'Honoring history does not fabricate video evidence or quiz grades.' );
+    $assert( false === update_user_meta( $historical_student_id, '_tutor_completed_lesson_id_505', time() - DAY_IN_SECONDS ), 'Backdating a new completion cannot bypass the new requirements.' );
+    $assert( bmb_student_historical_completions( $historical_student_id ) === array( 501 ), 'The historical snapshot does not grow to include future completions.' );
+    $assert( ! bmb_student_class_status( $class, $student_id )['grandfathered'], 'New verified completions stay distinct from historical completions.' );
+    delete_user_meta( $historical_student_id, '_tutor_completed_lesson_id_501' );
+    $assert( ! bmb_student_class_status( $class, $historical_student_id )['complete'], 'An explicitly cleared completion is not resurrected from the historical snapshot.' );
     WP_CLI::success( $checks . ' dashboard and completion checks passed.' );
 } finally {
     $wpdb->delete( $wpdb->prefix . 'tutor_quiz_attempts', array( 'user_id' => $student_id ) );
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user( $student_id );
+    if ( $historical_student_id && ! is_wp_error( $historical_student_id ) ) {
+        wp_delete_user( $historical_student_id );
+    }
 }

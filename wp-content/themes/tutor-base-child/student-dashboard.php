@@ -74,14 +74,19 @@ get_header();
                 <?php endif; ?>
 
                 <div class="bmb-class-requirements">
+                    <?php if ( $state['grandfathered'] ) : ?>
+                    <div><span class="bmb-step-number">✓</span><div><strong>Previously completed</strong><span>Your saved completion is preserved</span></div></div>
+                    <div><span class="bmb-step-number">↗</span><div><strong>Review anytime</strong><span>No rewatch or quiz retake required</span></div></div>
+                    <?php else : ?>
                     <div><span class="bmb-step-number" data-bmb-video-check><?php echo $state['video']['complete'] ? '✓' : '1'; ?></span><div><strong>Watch the full video</strong><span data-bmb-watch-label><?php echo esc_html( $state['video']['percent'] ); ?>% watched</span></div></div>
                     <div><span class="bmb-step-number"><?php echo $state['quiz_passed'] ? '✓' : '2'; ?></span><div><strong>Pass the class quiz</strong><span><?php echo $state['quiz_passed'] ? 'Passed' : 'Use the quiz’s required passing score'; ?></span></div></div>
+                    <?php endif; ?>
                 </div>
-                <p class="bmb-save-status" data-bmb-save-status role="status" aria-live="polite"><?php echo $state['previously_complete'] && ! $state['complete'] ? 'A previous completion is recorded. Watch verification and a passed quiz are required for this dashboard’s completion checkmark.' : 'Progress saves automatically while you watch. Seeking ahead does not complete skipped sections.'; ?></p>
+                <p class="bmb-save-status" data-bmb-save-status role="status" aria-live="polite"><?php echo $state['grandfathered'] ? 'Your previous class completion is honored. Reviewing this class is optional.' : 'Progress saves automatically while you watch. Seeking ahead does not complete skipped sections.'; ?></p>
                 <div class="bmb-class-actions">
                     <?php if ( $state['accessible'] && $selected['quizzes'] ) : ?>
                         <?php foreach ( $selected['quizzes'] as $quiz_id ) : ?>
-                            <?php if ( bmb_student_can_access( $quiz_id, $user->ID ) ) : ?><a class="bmb-button" href="<?php echo esc_url( get_permalink( $quiz_id ) ); ?>"><?php echo $state['quiz_passed'] ? 'Review quiz' : 'Take class quiz'; ?> <span aria-hidden="true">→</span></a><?php endif; ?>
+                            <?php if ( bmb_student_can_access( $quiz_id, $user->ID ) ) : ?><a class="bmb-button" href="<?php echo esc_url( get_permalink( $quiz_id ) ); ?>"><?php echo $state['quiz_passed'] || $state['grandfathered'] ? 'Review quiz' : 'Take class quiz'; ?> <span aria-hidden="true">→</span></a><?php endif; ?>
                         <?php endforeach; ?>
                     <?php elseif ( $state['accessible'] ) : ?><span class="bmb-muted">The quiz for this class is not available yet.</span><?php endif; ?>
                     <?php if ( $next_id && $selected_id !== $next_id ) : ?><a class="bmb-text-link" href="<?php echo esc_url( add_query_arg( 'class', $next_id, $dashboard_url ) ); ?>">Continue Learning →</a><?php endif; ?>
@@ -110,10 +115,10 @@ get_header();
                     <summary><span class="bmb-module-number"><?php echo esc_html( str_pad( $index + 1, 2, '0', STR_PAD_LEFT ) ); ?></span><span class="bmb-module-name"><?php echo esc_html( $module['topic']->post_title ); ?><small><span data-bmb-module-count><?php echo esc_html( $module_completed ); ?></span> of <?php echo esc_html( count( $module['classes'] ) ); ?> classes complete</small></span><span class="bmb-module-chevron" aria-hidden="true">⌄</span></summary>
                     <ol class="bmb-class-list">
                         <?php foreach ( $module['classes'] as $id => $class ) : ?>
-                            <?php $s = $states[ $id ]; $label = $s['complete'] ? 'Completed' : ( ! $s['accessible'] ? 'Access required' : ( $s['previously_complete'] ? 'Verification needed' : ( $s['video']['percent'] > 0 || $s['quiz_passed'] ? 'In progress' : 'Not started' ) ) ); ?>
+                            <?php $s = $states[ $id ]; $label = $s['complete'] ? 'Completed' : ( ! $s['accessible'] ? 'Access required' : ( $s['video']['percent'] > 0 || $s['quiz_passed'] ? 'In progress' : 'Not started' ) ); ?>
                             <li data-bmb-class="<?php echo esc_attr( $id ); ?>" data-complete="<?php echo $s['complete'] ? 'true' : 'false'; ?>" class="<?php echo $selected_id === $id ? 'bmb-class-current' : ''; ?>">
                                 <span class="bmb-class-indicator <?php echo $s['complete'] ? 'is-complete' : ''; ?>" aria-hidden="true"><?php echo $s['complete'] ? '✓' : '○'; ?></span>
-                                <a href="<?php echo esc_url( add_query_arg( 'class', $id, $dashboard_url ) ); ?>" <?php echo $selected_id === $id ? 'aria-current="true"' : ''; ?>><strong><?php echo esc_html( $class['lesson']->post_title ); ?></strong><span data-bmb-class-detail><?php echo esc_html( $s['video']['percent'] ); ?>% watched · <?php echo $s['quiz_passed'] ? 'Quiz passed' : 'Quiz to pass'; ?></span></a>
+                                <a href="<?php echo esc_url( add_query_arg( 'class', $id, $dashboard_url ) ); ?>" <?php echo $selected_id === $id ? 'aria-current="true"' : ''; ?>><strong><?php echo esc_html( $class['lesson']->post_title ); ?></strong><span data-bmb-class-detail><?php if ( $s['grandfathered'] ) : ?>Previous completion preserved<?php else : ?><?php echo esc_html( $s['video']['percent'] ); ?>% watched · <?php echo $s['quiz_passed'] ? 'Quiz passed' : 'Quiz to pass'; ?><?php endif; ?></span></a>
                                 <span class="bmb-class-status" data-bmb-class-status><?php echo esc_html( $label ); ?></span>
                             </li>
                         <?php endforeach; ?>
