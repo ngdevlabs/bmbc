@@ -17,6 +17,7 @@ $assert( bmb_signup_validate( array_merge( $valid, array( 'country' => 'GB', 'st
 $assert( bmb_signup_validate( array_merge( $valid, array( 'first_name' => '', 'last_name' => '' ) ) )->get_error_message( 'first_name' ), 'Names are required on the server.' );
 $assert( bmb_signup_validate( array_merge( $valid, array( 'password_confirmation' => 'different' ) ) )->get_error_message( 'password_confirmation' ), 'A password confirmation mismatch is rejected.' );
 $assert( bmb_signup_validate( array_merge( $valid, array( 'password' => 'short', 'password_confirmation' => 'short' ) ) )->get_error_message( 'password' ), 'The minimum password length is enforced on the server.' );
+$assert( bmb_signup_validate( array_merge( $valid, array( 'password' => '<b>abc</b>', 'password_confirmation' => '<b>abc</b>' ) ) )->get_error_message( 'password' ), 'Tutor password normalization cannot bypass the minimum length.' );
 $user_id = get_current_user_id();
 try {
     wp_set_current_user( 0 );

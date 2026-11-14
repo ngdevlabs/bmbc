@@ -40,7 +40,7 @@ function bmb_signup_validate( $data ) {
         $errors->add( 'state', 'Please enter your state or region (100 characters or fewer).' );
     }
     $password = $data['password'] ?? '';
-    if ( strlen( $password ) < 8 || strlen( $password ) > 4096 ) {
+    if ( strlen( sanitize_text_field( $password ) ) < 8 || strlen( $password ) > 4096 ) {
         $errors->add( 'password', 'Please use a password with at least 8 characters.' );
     }
     if ( $password !== ( $data['password_confirmation'] ?? '' ) ) {
