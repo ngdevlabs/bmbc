@@ -4,6 +4,31 @@
  */
 defined( 'ABSPATH' ) || exit;
 
+// Existing WordPress/Tutor login, registration, and Continue links share this setting.
+// Resolve it in code so the new destination deploys without copying database options.
+add_filter( 'pre_option_jeffrey_tutor_login_redirect_custom_url', static function ( $value ) {
+    return function_exists( 'tutor_utils' ) ? tutor_utils()->tutor_dashboard_url() : $value;
+} );
+// Kirki's already-logged-in cards also contain authored Continue buttons.
+add_filter( 'kirki_element_generator_button', static function ( $html, $context ) {
+    if ( $html || ! is_user_logged_in() ) {
+        return $html;
+    }
+    $element = $context['element'];
+    $href = $element['properties']['attributes']['href'] ?? '';
+    if ( ! $href || untrailingslashit( wp_parse_url( $href, PHP_URL_PATH ) ) !== untrailingslashit( wp_parse_url( get_permalink( bmb_student_course_id() ), PHP_URL_PATH ) ) ) {
+        return $html;
+    }
+    foreach ( $element['children'] ?? array() as $child_id ) {
+        $label = trim( implode( '', $context['elements'][ $child_id ]['properties']['contents'] ?? array() ) );
+        if ( 'Continue' === $label ) {
+            $element['properties']['attributes']['href'] = tutor_utils()->tutor_dashboard_url();
+            return call_user_func( $context['generate_element'], $element, $context['options'] );
+        }
+    }
+    return $html;
+}, 10, 2 );
+
 function bmb_student_course_id() {
     static $id;
     if ( null === $id ) {
@@ -393,3 +418,64 @@ function bmb_student_resources( $lesson_id ) {
     }
     return array_values( $resources );
 }
+
+/** Turn the authored syllabus sections into native, keyboard-accessible accordions. */
+function bmb_syllabus_accordions( $content ) {
+    if ( strpos( $content, 'bmb-syllabus-module' ) !== false || ! preg_match( '/Module\s+(?:One|Two|Three|Four)/iu', wp_strip_all_tags( $content ) ) ) {
+        return $content;
+    }
+    $doc = new DOMDocument();
+    $previous_errors = libxml_use_internal_errors( true );
+    $doc->loadHTML( '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div id="bmb-syllabus-source">' . $content . '</div></body></html>' );
+    libxml_clear_errors();
+    libxml_use_internal_errors( $previous_errors );
+    $source = $doc->getElementById( 'bmb-syllabus-source' );
+    if ( ! $source ) {
+        return $content;
+    }
+    // The imported Wix layout nests module headings at different depths. Flatten
+    // its layout wrappers while retaining authored paragraphs, lists, links, and images.
+    $blocks = array();
+    $collect = static function ( $node ) use ( &$collect, &$blocks ) {
+        if ( $node instanceof DOMElement && in_array( strtolower( $node->tagName ), array( 'div', 'section', 'article' ), true ) ) {
+            foreach ( $node->childNodes as $child ) {
+                $collect( $child );
+            }
+        } else {
+            $blocks[] = $node->cloneNode( true );
+        }
+    };
+    foreach ( $source->childNodes as $node ) {
+        $collect( $node );
+    }
+    $output = $doc->createElement( 'div' );
+    $output->setAttribute( 'class', 'bmb-syllabus-content' );
+    $destination = $output;
+    $modules = 0;
+    foreach ( $blocks as $block ) {
+        if ( $block instanceof DOMElement && 'h2' === strtolower( $block->tagName ) && preg_match( '/^Module\s+(?:One|Two|Three|Four)\b/iu', trim( $block->textContent ) ) ) {
+            $details = $doc->createElement( 'details' );
+            $details->setAttribute( 'class', 'bmb-syllabus-module' );
+            $details->setAttribute( 'name', 'bmb-syllabus-modules' );
+            $summary = $doc->createElement( 'summary' );
+            $summary->appendChild( $doc->createTextNode( trim( $block->textContent ) ) );
+            $details->appendChild( $summary );
+            $destination = $doc->createElement( 'div' );
+            $destination->setAttribute( 'class', 'bmb-syllabus-module-body' );
+            $details->appendChild( $destination );
+            $output->appendChild( $details );
+            ++$modules;
+        } else {
+            $destination->appendChild( $block );
+        }
+    }
+    return 4 === $modules ? $doc->saveHTML( $output ) : $content;
+}
+add_filter( 'the_content', static function ( $content ) {
+    return is_singular( 'courses' ) && get_queried_object_id() === bmb_student_course_id() ? bmb_syllabus_accordions( $content ) : $content;
+}, 20 );
+add_action( 'wp_enqueue_scripts', static function () {
+    if ( is_singular( 'courses' ) && get_queried_object_id() === bmb_student_course_id() ) {
+        wp_enqueue_style( 'bmb-syllabus', get_stylesheet_directory_uri() . '/assets/css/syllabus.css', array( 'child-style' ), filemtime( get_stylesheet_directory() . '/assets/css/syllabus.css' ) );
+    }
+} );

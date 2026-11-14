@@ -121,6 +121,18 @@ try {
     $assert( ! bmb_student_class_status( $class, $student_id )['grandfathered'], 'New verified completions stay distinct from historical completions.' );
     delete_user_meta( $historical_student_id, '_tutor_completed_lesson_id_501' );
     $assert( ! bmb_student_class_status( $class, $historical_student_id )['complete'], 'An explicitly cleared completion is not resurrected from the historical snapshot.' );
+
+    $syllabus = get_post_field( 'post_content', bmb_student_course_id() );
+    $accordions = bmb_syllabus_accordions( $syllabus );
+    $assert( substr_count( $accordions, 'class="bmb-syllabus-module"' ) === 4, 'The syllabus renders exactly one accordion per module.' );
+    $text = static fn( $html ) => preg_replace( '/[\s\x{00a0}]+/u', '', html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES, 'UTF-8' ) );
+    $assert( $text( $syllabus ) === $text( $accordions ), 'Accordion conversion preserves all authored syllabus text.' );
+    $assert( substr_count( $syllabus, '<img ' ) === substr_count( $accordions, '<img ' ), 'Accordion conversion preserves syllabus images.' );
+    $assert( bmb_syllabus_accordions( $accordions ) === $accordions, 'Repeated content filtering does not nest or duplicate accordions.' );
+    $dashboard_url = tutor_utils()->tutor_dashboard_url();
+    $assert( apply_filters( 'login_redirect', get_permalink( bmb_student_course_id() ), '', get_userdata( $student_id ) ) === $dashboard_url, 'Student WordPress login redirects to the dashboard rather than the syllabus.' );
+    $assert( apply_filters( 'tutor_after_login_redirect_url', get_permalink( bmb_student_course_id() ) ) === $dashboard_url, 'Tutor login uses the same dashboard destination.' );
+    $assert( apply_filters( 'login_redirect', admin_url(), '', get_userdata( 1 ) ) === admin_url(), 'Administrator WordPress login remains unchanged.' );
     WP_CLI::success( $checks . ' dashboard and completion checks passed.' );
 } finally {
     $wpdb->delete( $wpdb->prefix . 'tutor_quiz_attempts', array( 'user_id' => $student_id ) );
