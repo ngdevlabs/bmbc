@@ -452,7 +452,7 @@ function bmb_student_navigation() {
         <?php if ( is_user_logged_in() ) : ?>
             <a class="bmb-logout" href="<?php echo esc_url( wp_logout_url( home_url( '/' ) ) ); ?>">Log Out</a>
         <?php else : ?>
-            <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Log In</a>
+            <a href="<?php echo esc_url( home_url( '/#login' ) ); ?>">Log In</a>
         <?php endif; ?>
     </nav>
     <?php

@@ -36,9 +36,15 @@
             if (dialog.id === 'bmb-introduction-dialog' && video) {
                 resumeAt = video.currentTime || 0; video.pause(); video.removeAttribute('src'); video.load();
             }
+            if (dialog.id === 'bmb-login-dialog' && location.hash === '#login') history.replaceState(null, '', location.pathname + location.search);
             if (!dialogs.some(item => item.open)) document.body.classList.remove('bmb-landing-modal-open');
             trigger?.focus({preventScroll: true});
         });
     });
+    function openLinkedLogin() {
+        if (location.hash === '#login' && !document.querySelector('#bmb-login-dialog')?.open) document.querySelector('[data-bmb-dialog="bmb-login-dialog"]')?.click();
+    }
+    window.addEventListener('hashchange', openLinkedLogin);
+    openLinkedLogin();
     document.addEventListener('submit', event => { if (event.target.matches('[data-ele_name="kirki-login"]')) setLoginDestination(); }, true);
 })();

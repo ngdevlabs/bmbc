@@ -50,7 +50,7 @@ get_header();
             <button class="bmb-signup-submit" type="submit" name="tutor_register_student_btn" value="register">Create an Account</button>
             <?php do_action( 'tutor_after_register_button' ); ?>
         </form>
-        <p class="bmb-signup-login">Already have an account? <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Log In</a></p>
+        <p class="bmb-signup-login">Already have an account? <a href="<?php echo esc_url( home_url( '/#login' ) ); ?>">Log In</a></p>
         <?php do_action( 'tutor_after_registration_form_wrap' ); do_action( 'tutor_after_student_reg_form' ); ?>
     <?php endif; ?>
     </section>
